@@ -1,2 +1,17 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import { Chat } from '$lib/components/chat';
+	import type { Message } from '$lib/components/chat/types';
+
+	const messages: Message[] = $state([
+		{
+			role: 'assistant',
+			content: 'Hello! How can I help you today?'
+		}
+	]);
+
+	function handleSubmit(message: string) {
+		messages.push({ role: 'user', content: message });
+	}
+</script>
+
+<Chat {messages} onSubmit={handleSubmit} />
