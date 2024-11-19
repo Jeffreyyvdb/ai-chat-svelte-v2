@@ -6,18 +6,43 @@
 	import BotIcon from 'lucide-svelte/icons/bot';
 	import UserIcon from 'lucide-svelte/icons/user';
 	import SendIcon from 'lucide-svelte/icons/send';
+	import WrenchIcon from 'lucide-svelte/icons/wrench';
+	import { onMount } from 'svelte';
 
-	const { input, handleSubmit, messages } = useChat({ maxSteps: 5 });
+	const { input, handleSubmit, messages } = useChat({
+		maxSteps: 5,
+	});
+
+	// Add a reference to the messages container
+	let messagesContainer: HTMLDivElement;
+
+	// Function to scroll to bottom
+	const scrollToBottom = () => {
+		if (messagesContainer) {
+			messagesContainer.scrollTop = messagesContainer.scrollHeight;
+		}
+	};
+
+	// Scroll when messages change
+	$: if ($messages) {
+		// Use setTimeout to ensure DOM is updated
+		setTimeout(scrollToBottom, 0);
+	}
+
+	// Scroll on initial load
+	onMount(() => {
+		scrollToBottom();
+	});
 </script>
 
 <div class="flex h-screen flex-col">
 	<main class="flex-1 overflow-hidden">
 		<div class="relative h-full">
-			<div class="h-full overflow-y-auto pb-32">
+			<div bind:this={messagesContainer} class="h-full overflow-y-auto pb-32">
 				<div class="mx-auto max-w-3xl pt-6">
 					<div class="space-y-6">
 						{#each $messages as message}
-							<div class="flex gap-4 px-4">
+							<div class="flex gap-4 px-4 {message.role === 'user' ? 'flex-row-reverse' : ''}">
 								<Avatar>
 									<div
 										class="flex h-full w-full items-center justify-center rounded-full bg-primary/10"
@@ -29,8 +54,23 @@
 										{/if}
 									</div>
 								</Avatar>
-								<div class="prose dark:prose-invert break-words">
-									{message.content}
+								<div class="flex max-w-[80%] flex-col gap-2">
+									{#if message.toolInvocations?.length}
+										{#each message.toolInvocations as tool}
+											<div
+												class="flex items-center gap-2 rounded-xl bg-secondary px-3 py-2 text-sm text-muted-foreground"
+											>
+												<WrenchIcon class="h-4 w-4" />
+												<span>Using tool: {tool.toolName}</span>
+											</div>
+										{/each}
+									{:else}
+										<div
+											class="prose dark:prose-invert whitespace-pre-wrap break-words rounded-2xl bg-muted px-4 py-2"
+										>
+											{message.content}
+										</div>
+									{/if}
 								</div>
 							</div>
 						{/each}
