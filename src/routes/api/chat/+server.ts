@@ -3,6 +3,8 @@ import { streamText, tool } from 'ai';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
 import { env } from '$env/dynamic/private';
+import { findRelevantContent } from '$lib/ai/embedding';
+import { createResource } from '$lib/actions/resource';
 
 const openai = createOpenAI({
     apiKey: env.OPENAI_API_KEY ?? '',
@@ -61,6 +63,34 @@ const tools = {
             return { timezone, time };
         },
     }),
+
+    addResource: tool({
+        description: `add a resource to your knowledge base.
+          If the user provides a random piece of knowledge unprompted, use this tool without asking for confirmation.`,
+        parameters: z.object({
+            content: z
+                .string()
+                .describe('the content or resource to add to the knowledge base'),
+        }),
+        execute: async ({ content }) => {
+            console.log('🗃️ Adding resource to knowledge base:', { content });
+            const result = await createResource({ content });
+            console.log('✅ Resource addition result:', { result });
+            return result;
+        },
+    }),
+    getInformation: tool({
+        description: `get information from your knowledge base to answer questions.`,
+        parameters: z.object({
+            question: z.string().describe('the users question'),
+        }),
+        execute: async ({ question }) => {
+            console.log('❓ Getting information for question:', { question });
+            const results = await findRelevantContent(question);
+            console.log('📚 Retrieved information:', { results });
+            return results;
+        },
+    }),
 };
 
 export const POST = (async ({ request }) => {
@@ -70,7 +100,7 @@ export const POST = (async ({ request }) => {
         console.log(`💬 Processing ${messages.length} messages in conversation`);
 
         const result = streamText({
-            model: openai('gpt-4-turbo-preview'),
+            model: openai('gpt-4o-mini'),
             messages,
             tools,
         });
