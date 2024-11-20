@@ -102,9 +102,11 @@ export class ChatService {
 
     async handleChatRequest(messages: any[]) {
         logger.info('Processing chat request', { messageCount: messages.length });
-        
+
         return streamText({
             model: this.openai('gpt-4o-mini'),
+            system: `You are a helpful assistant. Check your knowledge base before answering any questions.
+            Only respond to questions using information from tool calls when necessary.`,
             messages,
             tools: this.tools,
         });
