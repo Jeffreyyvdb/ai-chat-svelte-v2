@@ -5,9 +5,11 @@ import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { nanoid } from "../../utils";
 
-export const user = pgTable('user', {
-	id: serial('id').primaryKey(),
-	age: integer('age')
+export const usersTable = pgTable("users", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar({ length: 255 }).notNull(),
+  age: integer().notNull(),
+  email: varchar({ length: 255 }).notNull().unique(),
 });
 
 export const embeddings = pgTable(
