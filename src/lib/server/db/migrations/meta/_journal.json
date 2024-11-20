@@ -15,6 +15,13 @@
       "when": 1732120101645,
       "tag": "0001_keen_stardust",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1732132398337,
+      "tag": "0002_clammy_moonstone",
+      "breakpoints": true
     }
   ]
 }
