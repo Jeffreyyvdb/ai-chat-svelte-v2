@@ -524,14 +524,41 @@ export const initialMessages: Message[] = [
 					]
 				}
 			}
-		],
-		revisionId: 'rI5UdSdboBSS5XyQ'
+		]
 	},
 	{
 		id: 'l0FCM3eafvIZKK6a',
 		role: 'assistant',
 		content:
 			'The cities with the most SaaS unicorns are:\n\n1. **San Francisco** - 88 unicorns\n2. **New York** - 39 unicorns\n3. **Beijing** - 15 unicorns\n4. **Palo Alto** - 14 unicorns\n5. **London** - 11 unicorns\n6. **Tel Aviv** - 10 unicorns\n7. **Boston** - 10 unicorns\n8. **Mountain View** - 8 unicorns\n9. **Sunnyvale** - 6 unicorns\n10. **Chicago** - 6 unicorns\n\nThese cities are leading in the number of SaaS unicorns, with San Francisco being the top city by a significant margin.',
+		createdAt: new Date('2024-11-22T16:14:21.071Z')
+	},
+	{
+		id: 'l0FCM3eafvIZKK6a',
+		role: 'assistant',
+		content:
+			'# Markdown Examples\n\n' +
+			'## Table Example\n' +
+			'| Framework | Language | Stars |\n' +
+			'|-----------|----------|-------|\n' +
+			'| SvelteKit | TypeScript | ⭐️⭐️⭐️⭐️⭐️ |\n' +
+			'| Next.js | JavaScript | ⭐️⭐️⭐️⭐️ |\n' +
+			'| Nuxt | Vue | ⭐️⭐️⭐️ |\n\n' +
+			'## Code Block Example\n' +
+			'```typescript\n' +
+			'interface User {\n' +
+			'  id: string;\n' +
+			'  name: string;\n' +
+			'  email: string;\n' +
+			'}\n' +
+			'```\n\n' +
+			'## Other Markdown Features\n' +
+			'> This is a blockquote with some *italic* and **bold** text\n\n' +
+			'- List item with `inline code`\n' +
+			'- Item with a [link](https://example.com)\n' +
+			'- Item with ~~strikethrough~~\n\n' +
+			'---\n' +
+			'<kbd>Ctrl</kbd> + <kbd>C</kbd> to copy',
 		createdAt: new Date('2024-11-22T16:14:21.071Z')
 	}
 ];

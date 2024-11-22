@@ -9,7 +9,6 @@
 	import { derived } from 'svelte/store';
 	import MessageInput from '$lib/components/message-input.svelte';
 	import Message from '$lib/components/message.svelte';
-	import QueryViewer from '$lib/components/query-viewer.svelte';
 	import ToolInvocationMessage from '$lib/components/tool-invocation-message.svelte';
 
 	const {
