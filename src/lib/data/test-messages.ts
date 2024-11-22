@@ -537,28 +537,7 @@ export const initialMessages: Message[] = [
 		id: 'l0FCM3eafvIZKK6a',
 		role: 'assistant',
 		content:
-			'# Markdown Examples\n\n' +
-			'## Table Example\n' +
-			'| Framework | Language | Stars |\n' +
-			'|-----------|----------|-------|\n' +
-			'| SvelteKit | TypeScript | ⭐️⭐️⭐️⭐️⭐️ |\n' +
-			'| Next.js | JavaScript | ⭐️⭐️⭐️⭐️ |\n' +
-			'| Nuxt | Vue | ⭐️⭐️⭐️ |\n\n' +
-			'## Code Block Example\n' +
-			'```typescript\n' +
-			'interface User {\n' +
-			'  id: string;\n' +
-			'  name: string;\n' +
-			'  email: string;\n' +
-			'}\n' +
-			'```\n\n' +
-			'## Other Markdown Features\n' +
-			'> This is a blockquote with some *italic* and **bold** text\n\n' +
-			'- List item with `inline code`\n' +
-			'- Item with a [link](https://example.com)\n' +
-			'- Item with ~~strikethrough~~\n\n' +
-			'---\n' +
-			'<kbd>Ctrl</kbd> + <kbd>C</kbd> to copy',
+			'**Hi**\n# Title\n ## Subtitle\n ### SubSubTitle\n```csharp\nvar users = await db.query.users.findMany();\n```',
 		createdAt: new Date('2024-11-22T16:14:21.071Z')
 	}
 ];
