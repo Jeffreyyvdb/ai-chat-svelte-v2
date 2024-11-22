@@ -1,38 +1,67 @@
-# sv
+# AI Chat Assistant
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A modern chat interface built with SvelteKit that provides AI assistance, database querying capabilities, and interactive features.
 
-## Creating a project
+## 🌟 Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- AI chat interface
+- Database querying and analytics capabilities
+- Memory for storing and recalling information
+- Other general tool calling capabilities like weather, time zone conversions, temperature conversions, etc.
 
+## 🚀 Prerequisites
+
+- [Bun](https://bun.sh) (v1.0 or higher)
+- Docker for PostgreSQL database
+- Git
+
+## 📦 Installation
+
+1. Clone the repository:
 ```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+git clone <repository-url>
+cd <project-directory>
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
+2. Install dependencies:
 ```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+bun install
 ```
 
-## Building
-
-To create a production version of your app:
-
+3. Set up environment variables:
 ```bash
-npm run build
+# Copy the example env file
+cp .env.example .env
+
+# Edit .env with your values:
+DATABASE_URL="postgresql://user:password@localhost:5432/your_database"
+OPENAI_API_KEY="your-openai-api-key"
 ```
 
-You can preview the production build with `npm run preview`.
+## 🗄 Development
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+1. Start the PostgreSQL database:
+```bash
+# Start PostgreSQL container
+docker compose up -d
+```
+
+2. Setup the database:
+```bash
+# Run database migrations
+bun db:migrate
+
+# Seed the database with sample data
+bun db:seed
+```
+
+3. Start the development server:
+```bash
+bun dev
+```
+
+The application will be available at `http://localhost:5173`
+
+
+
+
