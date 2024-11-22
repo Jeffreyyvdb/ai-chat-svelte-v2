@@ -18,7 +18,7 @@
 			<div class="relative flex-1">
 				<Input
 					{disabled}
-					 bind:value
+					bind:value
 					placeholder="Message..."
 					class="min-h-[52px] w-full rounded-xl bg-background px-4 py-6"
 				/>

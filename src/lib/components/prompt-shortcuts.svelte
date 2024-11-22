@@ -28,14 +28,16 @@
 	}
 </script>
 
-<div class="mb-2 flex flex-wrap gap-2 rounded-xl bg-muted/50 px-4 py-2">
-	{#each shortcuts as shortcut}
-		<button
-			class="rounded-full bg-primary/10 px-3 py-1.5 text-sm transition-colors hover:bg-primary/20"
-			title={shortcut.description}
-			on:click={() => handleShortcutClick(shortcut.text)}
-		>
-			{shortcut.text}
-		</button>
-	{/each}
+<div class="mb-2 rounded-xl bg-muted/50 px-4 py-2">
+	<div class="flex flex-wrap justify-evenly gap-2">
+		{#each shortcuts as shortcut}
+			<button
+				class="shrink-1 grow-[1] basis-auto rounded-full bg-primary/10 px-3 py-1.5 text-left text-sm transition-colors hover:bg-primary/20"
+				title={shortcut.description}
+				on:click={() => handleShortcutClick(shortcut.text)}
+			>
+				{shortcut.text}
+			</button>
+		{/each}
+	</div>
 </div>
