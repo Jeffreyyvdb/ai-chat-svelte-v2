@@ -102,7 +102,7 @@ export class ChatService {
 		logger.info('Processing chat request', { messageCount: messages.length });
 
 		return streamText({
-			model: this.openai('gpt-4o-mini'),
+			model: this.openai('gpt-4o'),
 			system: `You are a helpful assistant. Check your knowledge base before answering any questions.
             Only respond to questions using information from tool calls when necessary.`,
 			messages,

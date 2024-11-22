@@ -10,7 +10,7 @@
 	import { onMount } from 'svelte';
 
 	const { input, handleSubmit, messages } = useChat({
-		maxSteps: 5,
+		maxSteps: 5
 	});
 
 	// Add a reference to the messages container
