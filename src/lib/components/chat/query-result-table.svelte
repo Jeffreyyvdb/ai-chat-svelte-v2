@@ -1,5 +1,6 @@
 <script lang="ts">
 	import QueryViewer from './query-viewer.svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
 
 	type Props = {
 		data: any;
@@ -58,41 +59,38 @@
 	</div>
 </div>
 
-{#if showFullData}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-		<div class="h-[90vh] w-[90vw] overflow-auto rounded-lg bg-background p-6">
-			<div class="mb-4 flex items-center justify-between">
-				<h2 class="text-xl font-semibold">Full Results ({data.length} rows)</h2>
-				<button onclick={toggleFullData} class="rounded p-2 hover:bg-muted"> ✕ </button>
-			</div>
-			<div class="overflow-x-auto">
-				<table class="w-full">
-					<thead>
+<Dialog.Root open={showFullData} onOpenChange={(open) => (showFullData = open)}>
+	<Dialog.Content class="max-h-[90vh] max-w-[90vw]">
+		<div class="flex items-center justify-between">
+			<Dialog.Title>Full Results ({data.length} rows)</Dialog.Title>
+			<Dialog.Close />
+		</div>
+		<div class="mt-4 overflow-x-auto">
+			<table class="w-full">
+				<thead>
+					<tr>
+						{#each Object.keys(data[0]) as header}
+							<th class="sticky top-0 border-b bg-background p-2 text-left font-medium">{header}</th
+							>
+						{/each}
+					</tr>
+				</thead>
+				<tbody>
+					{#each data as row}
 						<tr>
-							{#each Object.keys(data[0]) as header}
-								<th class="sticky top-0 border-b bg-background p-2 text-left font-medium"
-									>{header}</th
-								>
+							{#each Object.values(row) as cell}
+								<td class="border-b p-2">
+									{typeof cell === 'number'
+										? cell.toLocaleString(undefined, {
+												maximumFractionDigits: 2
+											})
+										: cell}
+								</td>
 							{/each}
 						</tr>
-					</thead>
-					<tbody>
-						{#each data as row}
-							<tr>
-								{#each Object.values(row) as cell}
-									<td class="border-b p-2">
-										{typeof cell === 'number'
-											? cell.toLocaleString(undefined, {
-													maximumFractionDigits: 2
-												})
-											: cell}
-									</td>
-								{/each}
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
+					{/each}
+				</tbody>
+			</table>
 		</div>
-	</div>
-{/if}
+	</Dialog.Content>
+</Dialog.Root>

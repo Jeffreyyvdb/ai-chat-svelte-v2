@@ -12,7 +12,7 @@
 	let { value = $bindable(), onSend, disabled = false }: Props = $props();
 </script>
 
-<div class="py-4">
+<div class="pb-4">
 	<div class="mx-auto max-w-3xl">
 		<form class="flex items-center gap-3 px-4" onsubmit={onSend}>
 			<div class="relative flex-1">

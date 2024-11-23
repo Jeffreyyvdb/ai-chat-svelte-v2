@@ -25,7 +25,7 @@
 		"@types/eslint": "^9.6.1",
 		"@types/pg": "^8.11.10",
 		"autoprefixer": "^10.4.20",
-		"bits-ui": "^1.0.0-next.60",
+		"bits-ui": "^1.0.0-next.64",
 		"clsx": "^2.1.1",
 		"drizzle-kit": "^0.28.1",
 		"eslint": "^9.15.0",
@@ -49,6 +49,7 @@
 	"dependencies": {
 		"@ai-sdk/openai": "^1.0.1",
 		"@ai-sdk/svelte": "^1.0.0",
+		"@auth/sveltekit": "^1.7.4",
 		"@types/node": "^22.9.1",
 		"ai": "^4.0.1",
 		"csv": "^6.3.10",
