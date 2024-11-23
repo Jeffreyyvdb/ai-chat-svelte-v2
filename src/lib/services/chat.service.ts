@@ -115,7 +115,7 @@ export class ChatService {
 				logger.debug('Generating query', { question });
 				try {
 					const result = await generateObject({
-						model: this.openai('gpt-4o'),
+						model: this.openai('gpt-3.5-turbo'),
 						system: `You are  a SQL (postgres) and data visualization expert. Your job is to help users write SQL queries to retrieve data they need. The table schema is:
 
 						unicorns (
@@ -176,7 +176,7 @@ export class ChatService {
 		logger.info('Processing chat request', { messageCount: messages.length });
 
 		return streamText({
-			model: this.openai('gpt-4o'),
+			model: this.openai('gpt-3.5-turbo'),
 			system: `You are a helpful assistant with the ability to remember things about users, similar to how humans remember things about their friends. 
 
 			Important memory guidelines:

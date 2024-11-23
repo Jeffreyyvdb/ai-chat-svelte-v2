@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { SendIcon } from 'lucide-svelte';
-	import { Button } from './ui/button';
-	import { Input } from './ui/input';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
 
 	type Props = {
 		value: string;
