@@ -17,7 +17,7 @@ import { generateId } from 'ai';
 import { sql } from 'drizzle-orm';
 import { createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
-import { nanoid } from '../../utils';
+import { nanoid } from 'nanoid';
 
 export const usersTable = pgTable('users', {
 	id: integer().primaryKey().generatedAlwaysAsIdentity(),
