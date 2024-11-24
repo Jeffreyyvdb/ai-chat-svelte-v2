@@ -67,9 +67,9 @@
 	});
 </script>
 
-<div class="flex h-full flex-col">
+<div class="flex h-[calc(100vh-65px)] flex-col">
 	<main class="relative flex-1 overflow-hidden">
-		<div bind:this={messagesContainer} class="h-full overflow-y-auto scroll-smooth pb-32">
+		<div bind:this={messagesContainer} class="absolute inset-0 overflow-y-auto scroll-smooth">
 			{#if $messages.length === 0}
 				<div
 					in:fade={{ duration: 1000 }}
@@ -79,28 +79,28 @@
 					<p class="text-xl text-muted-foreground">What can I help you with today?</p>
 				</div>
 			{:else}
-				<div class="mx-auto max-w-3xl">
+				<div class="mx-auto max-w-3xl pb-36">
 					<div class="space-y-4 p-4 sm:space-y-6">
 						{#each $messages as message, i (i)}
 							<div
 								in:fly={{ y: 20, duration: 1000 }}
-								class="flex {message.role === 'user' ? 'flex-row-reverse' : ''}"
+								class="flex {message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}"
 							>
-								<div class="px-2" in:fade={{ duration: 1000 }}>
-									<Avatar class="h-6 w-6 border border-primary/20 sm:h-8 sm:w-8">
+								<div class="px-2 sm:px-4" in:fade={{ duration: 1000 }}>
+									<Avatar class="h-8 w-8 border border-primary/20 sm:h-10 sm:w-10 md:h-12 md:w-12">
 										<div
 											class="flex h-full w-full items-center justify-center rounded-full bg-primary/10"
 										>
 											{#if message.role === 'assistant'}
-												<BotIcon class="h-4 w-4 sm:h-5 sm:w-5" />
+												<BotIcon class="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
 											{:else}
-												<UserIcon class="h-4 w-4 sm:h-5 sm:w-5" />
+												<UserIcon class="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
 											{/if}
 										</div>
 									</Avatar>
 								</div>
 								<div
-									class="flex flex-1 flex-col pr-4 {message.role === 'user'
+									class="flex flex-1 flex-col {message.role === 'user'
 										? 'items-end'
 										: 'items-start'}"
 								>

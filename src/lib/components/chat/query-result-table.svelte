@@ -61,36 +61,37 @@
 
 <Dialog.Root open={showFullData} onOpenChange={(open) => (showFullData = open)}>
 	<Dialog.Content class="max-h-[90vh] max-w-[90vw]">
-		<div class="flex items-center justify-between">
+		<Dialog.Header>
 			<Dialog.Title>Full Results ({data.length} rows)</Dialog.Title>
 			<Dialog.Close />
-		</div>
-		<div class="mt-4 overflow-x-auto">
-			<table class="w-full">
-				<thead>
-					<tr>
-						{#each Object.keys(data[0]) as header}
-							<th class="sticky top-0 border-b bg-background p-2 text-left font-medium">{header}</th
-							>
-						{/each}
-					</tr>
-				</thead>
-				<tbody>
-					{#each data as row}
+		</Dialog.Header>
+		<div class="max-h-[calc(90vh-8rem)] overflow-y-auto">
+			<div class="overflow-x-auto">
+				<table class="w-full">
+					<thead>
 						<tr>
-							{#each Object.values(row) as cell}
-								<td class="border-b p-2">
-									{typeof cell === 'number'
-										? cell.toLocaleString(undefined, {
-												maximumFractionDigits: 2
-											})
-										: cell}
-								</td>
+							{#each Object.keys(data[0]) as header}
+								<th class="sticky top-0 border-b bg-background p-2 text-left font-medium">{header}</th>
 							{/each}
 						</tr>
-					{/each}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{#each data as row}
+							<tr>
+								{#each Object.values(row) as cell}
+									<td class="border-b p-2">
+										{typeof cell === 'number'
+											? cell.toLocaleString(undefined, {
+													maximumFractionDigits: 2
+												})
+											: cell}
+									</td>
+								{/each}
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</Dialog.Content>
 </Dialog.Root>
