@@ -11,7 +11,8 @@ import {
 	decimal,
 	primaryKey,
 	boolean,
-	uniqueIndex
+	uniqueIndex,
+	json
 } from 'drizzle-orm/pg-core';
 import { generateId } from 'ai';
 import { sql } from 'drizzle-orm';
@@ -153,3 +154,47 @@ export const authenticators = pgTable(
 		})
 	})
 );
+
+export const chats = pgTable('chat', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text('userId')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	title: text('title').notNull(),
+	createdAt: timestamp('created_at').notNull().defaultNow(),
+	updatedAt: timestamp('updated_at').notNull().defaultNow()
+});
+
+export const messages = pgTable('message', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	chatId: text('chatId')
+		.notNull()
+		.references(() => chats.id, { onDelete: 'cascade' }),
+	role: text('role').notNull(), // 'user' or 'assistant'
+	content: text('content'), // The text content
+	createdAt: timestamp('created_at').notNull().defaultNow()
+});
+
+export const toolCalls = pgTable('tool_call', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	messageId: text('message_id')
+		.notNull()
+		.references(() => messages.id, { onDelete: 'cascade' }),
+	toolCallId: text('tool_call_id').notNull(), // The ID from the AI response
+	toolName: text('tool_name').notNull(),
+	args: json('args').$type<Record<string, unknown>>(),
+	result: json('result').$type<unknown>(),
+	createdAt: timestamp('created_at').notNull().defaultNow()
+});
+
+// Types for type safety
+export type Chat = typeof chats.$inferSelect;
+export type NewChat = typeof chats.$inferInsert;
+export type Message = typeof messages.$inferSelect;
+export type NewMessage = typeof messages.$inferInsert;

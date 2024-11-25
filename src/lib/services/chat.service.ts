@@ -1,15 +1,33 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { generateObject, streamText, tool } from 'ai';
+import {
+	generateObject,
+	streamText,
+	tool,
+	type CoreAssistantMessage,
+	type CoreToolMessage,
+	type CoreMessage,
+	type ToolCallPart,
+	type TextPart,
+	type ToolResultPart
+} from 'ai';
 import { z } from 'zod';
 import { env } from '$env/dynamic/private';
 import { embeddingService } from './embedding.service';
 import { resourceService } from './resource.service';
 import { logger } from '../utils/logger';
 import { db } from '$lib/server/db';
+import {
+	messages as messagesTable,
+	toolCalls,
+	toolCalls as toolCallsTable,
+	type Message as DbMessage
+} from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
 export class ChatService {
 	private openai;
 	private tools;
+	private readonly CHAT_ID = '2c50f8f5-85e7-455b-b505-940fce842830'; // TODO: Make this dynamic
 
 	constructor() {
 		this.openai = createOpenAI({
@@ -77,15 +95,27 @@ export class ChatService {
 	private createAddResourceTool() {
 		return tool({
 			description:
-				'Save memories, preferences, or personal information shared during conversations. Use this to remember important details about the user, like their preferences, habits, or any information they share. Think of this as creating memories, similar to how humans remember things about their friends.',
+				'Save memories, preferences, or personal information shared during conversations.',
 			parameters: z.object({
 				content: z.string().describe('The memory or information to remember about the user')
 			}),
 			execute: async ({ content }) => {
-				logger.debug('Saving memory', { content });
-				return await resourceService.createResource({
-					content
-				});
+				try {
+					logger.debug('Saving memory', { content });
+
+					// Use resourceService instead of direct DB access
+					const result = await resourceService.createResource({ content });
+
+					logger.debug('Memory saved', { result });
+					return { success: true, message: 'Memory saved successfully', result };
+				} catch (error) {
+					logger.error('Failed to save memory', { error, content });
+					return {
+						success: false,
+						message: 'Failed to save memory',
+						error: error instanceof Error ? error.message : 'Unknown error'
+					};
+				}
 			}
 		});
 	}
@@ -172,8 +202,72 @@ export class ChatService {
 		});
 	}
 
-	async handleChatRequest(messages: any[]) {
+	private async saveUserMessage(content: string) {
+		return db
+			.insert(messagesTable)
+			.values({
+				chatId: this.CHAT_ID,
+				role: 'user',
+				content
+			})
+			.returning();
+	}
+
+	private async saveAssistantMessage(content: string | null, toolCall?: ToolCallPart) {
+		const [message] = await db
+			.insert(messagesTable)
+			.values({
+				chatId: this.CHAT_ID,
+				role: 'assistant',
+				content
+			})
+			.returning();
+
+		if (toolCall) {
+			await db.insert(toolCallsTable).values({
+				messageId: message.id,
+				toolCallId: toolCall.toolCallId,
+				toolName: toolCall.toolName,
+				args: toolCall.args as Record<string, unknown>
+			});
+		}
+
+		return message;
+	}
+
+	private async updateToolCallResult(toolCallId: string, result: unknown) {
+		await db
+			.update(toolCallsTable)
+			.set({ result })
+			.where(eq(toolCallsTable.toolCallId, toolCallId));
+	}
+
+	private async handleAssistantMessage(message: CoreAssistantMessage) {
+		if (Array.isArray(message.content)) {
+			const textPart = message.content.find((part): part is TextPart => part.type === 'text');
+			const toolPart = message.content.find(
+				(part): part is ToolCallPart => part.type === 'tool-call'
+			);
+
+			await this.saveAssistantMessage(textPart?.text || null, toolPart);
+		} else {
+			await this.saveAssistantMessage(message.content);
+		}
+	}
+
+	private async handleToolMessage(message: CoreToolMessage) {
+		const toolResult = message.content[0];
+		await this.updateToolCallResult(toolResult.toolCallId, toolResult.result);
+	}
+
+	async handleChatRequest(messages: CoreMessage[]) {
 		logger.info('Processing chat request', { messageCount: messages.length });
+
+		// Save only the user message
+		const lastMessage = messages[messages.length - 1];
+		if (lastMessage.role === 'user') {
+			await this.saveUserMessage(lastMessage.content as string);
+		}
 
 		return streamText({
 			model: this.openai('gpt-4o'),
@@ -189,8 +283,52 @@ export class ChatService {
 
 			Remember: You're building a personal relationship through these memories, so be conversational and natural in how you store and recall information.`,
 			messages,
-			tools: this.tools
+			tools: this.tools,
+			onFinish: async ({ response }) => {
+				for (const message of response.messages) {
+					if (message.role === 'assistant') {
+						await this.handleAssistantMessage(message);
+					} else if (message.role === 'tool') {
+						await this.handleToolMessage(message);
+					}
+				}
+			}
 		});
+	}
+
+	async getChatHistory(chatId: string) {
+		const messages = await db
+			.select({
+				message: messagesTable,
+				toolCalls: toolCallsTable
+			})
+			.from(messagesTable)
+			.leftJoin(toolCallsTable, eq(messagesTable.id, toolCallsTable.messageId))
+			.where(eq(messagesTable.chatId, chatId))
+			.orderBy(messagesTable.createdAt);
+
+		return this.groupMessagesWithToolCalls(messages);
+	}
+
+	private groupMessagesWithToolCalls(messages: { message: DbMessage; toolCalls: any }[]) {
+		type MessageWithToolCalls = DbMessage & { toolCalls?: (typeof toolCalls.$inferSelect)[] };
+
+		return messages.reduce<MessageWithToolCalls[]>((acc, curr) => {
+			const existingMessage = acc.find((m) => m.id === curr.message.id);
+			if (existingMessage) {
+				if (curr.toolCalls) {
+					existingMessage.toolCalls = existingMessage.toolCalls || [];
+					existingMessage.toolCalls.push(curr.toolCalls);
+				}
+			} else {
+				const newMessage = { ...curr.message } as MessageWithToolCalls;
+				if (curr.toolCalls) {
+					newMessage.toolCalls = [curr.toolCalls];
+				}
+				acc.push(newMessage);
+			}
+			return acc;
+		}, []);
 	}
 }
 
