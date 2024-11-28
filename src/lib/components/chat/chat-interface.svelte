@@ -3,8 +3,6 @@
 	import { page } from '$app/stores';
 	import BotIcon from 'lucide-svelte/icons/bot';
 	import UserIcon from 'lucide-svelte/icons/user';
-	import { onMount } from 'svelte';
-	import { useChat } from '@ai-sdk/svelte';
 	import QueryResultTable from '$lib/components/chat/query-result-table.svelte';
 	import MessageInput from '$lib/components/chat/message-input.svelte';
 	import Message from '$lib/components/chat/message.svelte';
@@ -12,27 +10,22 @@
 	import PromptShortcuts from '$lib/components/chat/prompt-shortcuts.svelte';
 	import SignInDialog from '$lib/components/auth/sign-in-dialog.svelte';
 	import { fade, fly } from 'svelte/transition';
+	import { useChat } from './use-chat';
 
-	const { input, handleSubmit, messages } = useChat({
+	// State management with runes
+	let messagesContainer: HTMLDivElement | undefined = $state(undefined);
+	let showSignInDialog = $state(false);
+
+	const { input, handleSubmit, messages, isLoading } = useChat({
 		maxSteps: 5
 	});
-
-	let waitingForResponse = false;
-	let messagesContainer: HTMLDivElement;
-	let showSignInDialog = false;
 
 	const scrollToBottom = () => {
 		if (!messagesContainer) return;
 
-		// Use requestAnimationFrame to ensure DOM is updated
 		requestAnimationFrame(() => {
-			const scrollHeight = messagesContainer.scrollHeight;
-			const height = messagesContainer.clientHeight;
-			const maxScrollTop = scrollHeight - height;
-
-			// Smooth scroll to bottom
-			messagesContainer.scrollTo({
-				top: maxScrollTop,
+			messagesContainer?.scrollTo({
+				top: messagesContainer.scrollHeight - messagesContainer.clientHeight,
 				behavior: 'smooth'
 			});
 		});
@@ -43,26 +36,27 @@
 			showSignInDialog = true;
 			return;
 		}
-		waitingForResponse = true;
 		handleSubmit(e);
 	};
 
-	// Watch for new messages and scroll
-	$: if ($messages) {
-		waitingForResponse = false;
-		// Add a small delay to ensure content is rendered
-		setTimeout(scrollToBottom, 100);
-	}
+	// Effects using $effect
+	$effect(() => {
+		// Watch for messages changes and scroll
+		if ($messages) {
+			setTimeout(scrollToBottom, 100);
+		}
+	});
 
-	// Watch for changes in the last message's content
-	$: if ($messages.length > 0) {
+	$effect(() => {
+		// Watch for last message changes
 		const lastMessage = $messages[$messages.length - 1];
 		if (lastMessage) {
 			scrollToBottom();
 		}
-	}
+	});
 
-	onMount(() => {
+	// Initialize scroll position
+	$effect.pre(() => {
 		scrollToBottom();
 	});
 </script>
@@ -81,7 +75,7 @@
 			{:else}
 				<div class="mx-auto max-w-3xl pb-36">
 					<div class="space-y-4 p-4 sm:space-y-6">
-						{#each $messages as message, i (i)}
+						{#each $messages as message, i (message.id)}
 							<div
 								in:fly={{ y: 20, duration: 1000 }}
 								class="flex {message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}"
@@ -137,7 +131,7 @@
 					<PromptShortcuts on:select={(e) => ($input = e.detail)} />
 				</div>
 			{/if}
-			<MessageInput bind:value={$input} disabled={waitingForResponse} onSend={handleMessageSend} />
+			<MessageInput bind:value={$input} disabled={$isLoading} onSend={handleMessageSend} />
 		</div>
 	</footer>
 </div>
