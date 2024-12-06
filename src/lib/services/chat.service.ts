@@ -8,7 +8,6 @@ import {
 	type CoreMessage,
 	type ToolCallPart,
 	type TextPart,
-	type ToolResultPart
 } from 'ai';
 import { z } from 'zod';
 import { env } from '$env/dynamic/private';
@@ -17,6 +16,8 @@ import { resourceService } from './resource.service';
 import { logger } from '../utils/logger';
 import { db } from '$lib/server/db';
 import {
+	type NewChat,
+	chats,
 	messages as messagesTable,
 	toolCalls,
 	toolCalls as toolCallsTable,
@@ -27,7 +28,6 @@ import { eq } from 'drizzle-orm';
 export class ChatService {
 	private openai;
 	private tools;
-	private readonly CHAT_ID = '2c50f8f5-85e7-455b-b505-940fce842830'; // TODO: Make this dynamic
 
 	constructor() {
 		this.openai = createOpenAI({
@@ -202,22 +202,22 @@ export class ChatService {
 		});
 	}
 
-	private async saveUserMessage(content: string) {
+	private async saveUserMessage(content: string, chatId: string) {
 		return db
 			.insert(messagesTable)
 			.values({
-				chatId: this.CHAT_ID,
+				chatId,
 				role: 'user',
 				content
 			})
 			.returning();
 	}
 
-	private async saveAssistantMessage(content: string | null, toolCall?: ToolCallPart) {
+	private async saveAssistantMessage(content: string | null, chatId: string , toolCall?: ToolCallPart) {
 		const [message] = await db
 			.insert(messagesTable)
 			.values({
-				chatId: this.CHAT_ID,
+				chatId,
 				role: 'assistant',
 				content
 			})
@@ -242,31 +242,59 @@ export class ChatService {
 			.where(eq(toolCallsTable.toolCallId, toolCallId));
 	}
 
-	private async handleAssistantMessage(message: CoreAssistantMessage) {
+	private async handleAssistantMessage(message: CoreAssistantMessage, chatId: string) {
 		if (Array.isArray(message.content)) {
 			const textPart = message.content.find((part): part is TextPart => part.type === 'text');
 			const toolPart = message.content.find(
 				(part): part is ToolCallPart => part.type === 'tool-call'
 			);
 
-			await this.saveAssistantMessage(textPart?.text || null, toolPart);
+			await this.saveAssistantMessage(textPart?.text || null, chatId, toolPart);
 		} else {
-			await this.saveAssistantMessage(message.content);
+			await this.saveAssistantMessage(message.content, chatId);
 		}
 	}
 
-	private async handleToolMessage(message: CoreToolMessage) {
+	private async handleToolMessage(message: CoreToolMessage, chatId: string) {
 		const toolResult = message.content[0];
 		await this.updateToolCallResult(toolResult.toolCallId, toolResult.result);
 	}
 
-	async handleChatRequest(messages: CoreMessage[]) {
+	async chatExists(chatId: string) {
+		const chat = await db.select().from(chats).where(eq(chats.id, chatId));
+		return chat.length > 0;
+	}
+
+	async createNewChat(chatId: string, userId: string) {
+
+		console.log('Creating new chat', {
+			id: chatId,
+			userId,
+			title: 'New Chat'
+		});
+		const newChat = await db
+			.insert(chats)
+			.values({
+				id: chatId,
+				userId,
+				title: 'New Chat'
+			})
+			.returning();
+
+		return newChat;
+	}
+
+	async handleChatRequest(messages: CoreMessage[], chatId: string, userId: string) {
 		logger.info('Processing chat request', { messageCount: messages.length });
+
+		if (!await this.chatExists(chatId)) {
+			await this.createNewChat(chatId, userId);
+		}
 
 		// Save only the user message
 		const lastMessage = messages[messages.length - 1];
 		if (lastMessage.role === 'user') {
-			await this.saveUserMessage(lastMessage.content as string);
+			await this.saveUserMessage(lastMessage.content as string, chatId);
 		}
 
 		return streamText({
@@ -287,9 +315,9 @@ export class ChatService {
 			onFinish: async ({ response }) => {
 				for (const message of response.messages) {
 					if (message.role === 'assistant') {
-						await this.handleAssistantMessage(message);
+						await this.handleAssistantMessage(message, chatId);
 					} else if (message.role === 'tool') {
-						await this.handleToolMessage(message);
+						await this.handleToolMessage(message, chatId);
 					}
 				}
 			}

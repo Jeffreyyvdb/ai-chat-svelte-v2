@@ -6,5 +6,11 @@ import GitHub from '@auth/sveltekit/providers/github';
 export const { handle, signIn, signOut } = SvelteKitAuth({
 	providers: [GitHub],
 	adapter: DrizzleAdapter(db),
-	trustHost: true
+	trustHost: true,
+	callbacks: {
+		session({ session, user }) {
+		  session.user.id = user.id
+		  return session
+		},
+	}
 });

@@ -154,7 +154,6 @@ export const authenticators = pgTable(
 		})
 	})
 );
-
 export const chats = pgTable('chat', {
 	id: text('id')
 		.primaryKey()
@@ -166,6 +165,7 @@ export const chats = pgTable('chat', {
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
+export type NewChat = typeof chats.$inferInsert
 
 export const messages = pgTable('message', {
 	id: text('id')
@@ -195,6 +195,5 @@ export const toolCalls = pgTable('tool_call', {
 
 // Types for type safety
 export type Chat = typeof chats.$inferSelect;
-export type NewChat = typeof chats.$inferInsert;
 export type Message = typeof messages.$inferSelect;
 export type NewMessage = typeof messages.$inferInsert;

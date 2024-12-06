@@ -11,7 +11,11 @@ export const load: PageServerLoad = async (events) => {
 		console.log('User logged in.', session.user.email);
 	}
 
+
+	const chatId = crypto.randomUUID();
+	
 	return {
-		session
+		session,
+		chatId
 	};
 };
